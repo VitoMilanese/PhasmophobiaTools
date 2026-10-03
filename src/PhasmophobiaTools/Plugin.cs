@@ -16,6 +16,10 @@ public sealed class Plugin : BasePlugin
     public override void Load()
     {
         Logger = Log;
+
+        AddComponent<DebugOverlayBehaviour>();
+
         Logger.LogInfo($"{PluginName} v{PluginVersion} loaded.");
+        Logger.LogInfo("Press F8 to toggle the debug overlay.");
     }
 }

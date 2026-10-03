@@ -29,7 +29,24 @@ Then start Phasmophobia. A successful load writes this message to the BepInEx lo
 
 ```text
 Phasmophobia Tools v0.1.0 loaded.
+Press F8 to toggle the debug overlay.
 ```
+
+## Debug overlay
+
+Press `F8` to open or close the in-game debug overlay.
+
+The overlay currently shows:
+
+- the Unity version
+- the active Unity scene
+- a refreshable hierarchy of scene objects
+- active/inactive state for each object
+- a text filter for object names
+
+The overlay temporarily unlocks and shows the mouse cursor while it is open, then restores the previous cursor state when it closes.
+
+To avoid accidentally freezing the game UI on unusually large scenes, the scene inspector displays at most 5,000 objects per refresh.
 
 ## Project structure
 
@@ -37,10 +54,11 @@ Phasmophobia Tools v0.1.0 loaded.
 PhasmophobiaTools.sln
 src/
   PhasmophobiaTools/
+    DebugOverlayBehaviour.cs
     PhasmophobiaTools.csproj
     Plugin.cs
 ```
 
 ## Notes
 
-The project intentionally starts with only the plugin bootstrap. Game-specific hooks, Harmony patches, hotkeys, UI, and runtime inspection can be added incrementally.
+The project intentionally does not reference Phasmophobia's generated `Assembly-CSharp.dll` yet. The current functionality only uses Unity APIs, so game-specific interop references can be added when the first Phasmophobia-specific hook is implemented.
