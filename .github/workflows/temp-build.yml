@@ -1,0 +1,46 @@
+name: Temporary build verification
+
+on:
+  push:
+    branches:
+      - ci/verify-f8-overlay-v3
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Download IL2CPP reference assemblies
+        shell: pwsh
+        run: |
+          $interop = Join-Path $PWD "ci-interop"
+          New-Item -ItemType Directory -Path $interop -Force | Out-Null
+          $base = "https://raw.githubusercontent.com/BepInEx/BepInEx.Utility.IL2CPP/main/IL2CPP_net6"
+          $files = @(
+            "Il2Cppmscorlib.dll",
+            "Il2CppSystem.dll",
+            "Il2CppSystem.Core.dll",
+            "UnityEngine.dll",
+            "UnityEngine.CoreModule.dll",
+            "UnityEngine.InputLegacyModule.dll"
+          )
+          foreach ($file in $files) {
+            Invoke-WebRequest "$base/$file" -OutFile (Join-Path $interop $file)
+          }
+
+      - name: Restore
+        run: dotnet restore PhasmophobiaTools.sln
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $interop = Join-Path $PWD "ci-interop"
+          dotnet build PhasmophobiaTools.sln --configuration Release --no-restore -p:PhasmophobiaInteropDir="$interop"
