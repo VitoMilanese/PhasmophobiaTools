@@ -1,0 +1,25 @@
+name: Temporary build verification
+
+on:
+  push:
+    branches:
+      - ci/verify-f8-overlay-v2
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore
+        run: dotnet restore PhasmophobiaTools.sln
+
+      - name: Build
+        run: dotnet build PhasmophobiaTools.sln --configuration Release --no-restore
