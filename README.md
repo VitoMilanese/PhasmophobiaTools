@@ -9,6 +9,37 @@ A C# plugin project for experimenting with Phasmophobia through BepInEx 6 and Un
 - Visual Studio 2022 or another compatible .NET IDE
 - BepInEx 6 IL2CPP installed into the Phasmophobia game directory
 
+Run Phasmophobia with BepInEx at least once before building this project. BepInEx generates the IL2CPP reference assemblies under:
+
+```text
+<Phasmophobia>/BepInEx/interop
+```
+
+Those generated assemblies are the correct compile-time references for Unity types in an IL2CPP game.
+
+## Configure the game directory
+
+If Phasmophobia is installed in the default Steam location, the project detects:
+
+```text
+C:\Program Files (x86)\Steam\steamapps\common\Phasmophobia
+```
+
+For another Steam library, set `PHASMOPHOBIA_GAME_DIR` before building:
+
+```powershell
+$env:PHASMOPHOBIA_GAME_DIR = "D:\SteamLibrary\steamapps\common\Phasmophobia"
+dotnet build PhasmophobiaTools.sln
+```
+
+You can also pass the generated interop directory directly:
+
+```powershell
+dotnet build PhasmophobiaTools.sln -p:PhasmophobiaInteropDir="D:\SteamLibrary\steamapps\common\Phasmophobia\BepInEx\interop"
+```
+
+If you set `PHASMOPHOBIA_GAME_DIR` as a persistent Windows environment variable, restart Visual Studio so it can see the new value.
+
 ## Build
 
 Open `PhasmophobiaTools.sln` and build the `PhasmophobiaTools` project.
@@ -64,4 +95,4 @@ src/
 
 The project intentionally does not reference Phasmophobia's generated `Assembly-CSharp.dll` yet. The current functionality only uses Unity APIs, so game-specific interop references can be added when the first Phasmophobia-specific hook is implemented.
 
-Unity IMGUI is resolved from the game's generated IL2CPP interop assemblies at runtime. This keeps the plugin compiled against BepInEx's IL2CPP Unity reference types instead of mixing them with regular Unity managed assemblies.
+Unity IMGUI is resolved from the game's generated IL2CPP interop assemblies at runtime. This avoids mixing BepInEx IL2CPP Unity types with regular managed Unity assemblies.
