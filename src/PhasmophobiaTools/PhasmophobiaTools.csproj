@@ -27,6 +27,18 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(PhasmophobiaInteropDir)' != ''">
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(PhasmophobiaInteropDir)\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(PhasmophobiaInteropDir)\Il2CppSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem.Core">
+      <HintPath>$(PhasmophobiaInteropDir)\Il2CppSystem.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(PhasmophobiaInteropDir)\UnityEngine.dll</HintPath>
       <Private>false</Private>
@@ -46,6 +58,8 @@
           Condition="'$(DesignTimeBuild)' != 'true'">
     <Error Condition="'$(PhasmophobiaInteropDir)' == ''"
            Text="Phasmophobia IL2CPP references were not found. Set PHASMOPHOBIA_GAME_DIR to the Phasmophobia game directory or pass -p:PhasmophobiaInteropDir=&quot;...BepInExinterop&quot;." />
+    <Error Condition="'$(PhasmophobiaInteropDir)' != '' and !Exists('$(PhasmophobiaInteropDir)\Il2Cppmscorlib.dll')"
+           Text="Il2Cppmscorlib.dll was not found in '$(PhasmophobiaInteropDir)'. Run Phasmophobia with BepInEx once so BepInEx/interop is generated, then build again." />
     <Error Condition="'$(PhasmophobiaInteropDir)' != '' and !Exists('$(PhasmophobiaInteropDir)\UnityEngine.CoreModule.dll')"
            Text="UnityEngine.CoreModule.dll was not found in '$(PhasmophobiaInteropDir)'. Run Phasmophobia with BepInEx once so BepInEx/interop is generated, then build again." />
     <Error Condition="'$(PhasmophobiaInteropDir)' != '' and !Exists('$(PhasmophobiaInteropDir)\UnityEngine.InputLegacyModule.dll')"
