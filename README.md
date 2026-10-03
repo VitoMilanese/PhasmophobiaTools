@@ -55,6 +55,7 @@ PhasmophobiaTools.sln
 src/
   PhasmophobiaTools/
     DebugOverlayBehaviour.cs
+    ImguiBridge.cs
     PhasmophobiaTools.csproj
     Plugin.cs
 ```
@@ -62,3 +63,5 @@ src/
 ## Notes
 
 The project intentionally does not reference Phasmophobia's generated `Assembly-CSharp.dll` yet. The current functionality only uses Unity APIs, so game-specific interop references can be added when the first Phasmophobia-specific hook is implemented.
+
+Unity IMGUI is resolved from the game's generated IL2CPP interop assemblies at runtime. This keeps the plugin compiled against BepInEx's IL2CPP Unity reference types instead of mixing them with regular Unity managed assemblies.

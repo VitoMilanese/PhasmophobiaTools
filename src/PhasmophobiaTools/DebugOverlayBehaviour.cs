@@ -7,7 +7,6 @@ namespace PhasmophobiaTools;
 
 public sealed class DebugOverlayBehaviour : MonoBehaviour
 {
-    private const int WindowId = 0x42575054;
     private const int MaxSceneObjects = 5000;
 
     private static readonly List<SceneObjectEntry> SceneObjects = new();
@@ -15,9 +14,9 @@ public sealed class DebugOverlayBehaviour : MonoBehaviour
     private static bool _isVisible;
     private static bool _cursorStateCaptured;
     private static bool _wasTruncated;
+    private static bool _imguiErrorLogged;
     private static CursorLockMode _previousCursorLockMode;
     private static bool _previousCursorVisible;
-    private static Rect _windowRect = new(20f, 20f, 720f, 620f);
     private static Vector2 _scrollPosition;
     private static string _filter = string.Empty;
     private static string _sceneName = "<not loaded>";
@@ -56,57 +55,82 @@ public sealed class DebugOverlayBehaviour : MonoBehaviour
             return;
         }
 
-        _windowRect = GUILayout.Window(
-            WindowId,
-            _windowRect,
-            (GUI.WindowFunction)DrawWindow,
-            "Phasmophobia Tools");
+        if (!ImguiBridge.EnsureInitialized())
+        {
+            if (!_imguiErrorLogged)
+            {
+                _imguiErrorLogged = true;
+                Plugin.Logger.LogError(
+                    $"Unable to initialize Unity IMGUI: {ImguiBridge.InitializationError}");
+            }
+
+            return;
+        }
+
+        try
+        {
+            DrawOverlay();
+        }
+        catch (Exception exception)
+        {
+            if (!_imguiErrorLogged)
+            {
+                _imguiErrorLogged = true;
+                Plugin.Logger.LogError($"Unable to draw debug overlay: {exception}");
+            }
+        }
     }
 
-    private static void DrawWindow(int windowId)
+    private static void DrawOverlay()
     {
-        GUILayout.Label($"Unity: {Application.unityVersion}");
-        GUILayout.Label($"Scene: {_sceneName}");
+        var outerRect = new Rect(20f, 20f, 720f, 620f);
+        var contentRect = new Rect(32f, 48f, 696f, 580f);
 
-        GUILayout.BeginHorizontal();
+        ImguiBridge.Box(outerRect, "Phasmophobia Tools");
+        ImguiBridge.BeginArea(contentRect);
 
-        if (GUILayout.Button("Refresh", GUILayout.Width(90f)))
+        ImguiBridge.Label($"Unity: {Application.unityVersion}");
+        ImguiBridge.Label($"Scene: {_sceneName}");
+
+        ImguiBridge.BeginHorizontal();
+
+        if (ImguiBridge.Button("Refresh"))
         {
             RefreshSceneObjects();
         }
 
-        GUILayout.Label($"Objects: {SceneObjects.Count}", GUILayout.Width(120f));
+        ImguiBridge.Label($"Objects: {SceneObjects.Count}");
 
         if (_wasTruncated)
         {
-            GUILayout.Label($"Showing first {MaxSceneObjects} objects.");
+            ImguiBridge.Label($"Showing first {MaxSceneObjects} objects.");
         }
 
-        GUILayout.FlexibleSpace();
+        ImguiBridge.FlexibleSpace();
 
-        if (GUILayout.Button("Close", GUILayout.Width(90f)))
+        if (ImguiBridge.Button("Close"))
         {
             Hide();
         }
 
-        GUILayout.EndHorizontal();
+        ImguiBridge.EndHorizontal();
 
-        GUILayout.Space(6f);
+        ImguiBridge.Space(6f);
 
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Filter:", GUILayout.Width(45f));
-        _filter = GUILayout.TextField(_filter);
+        ImguiBridge.BeginHorizontal();
+        ImguiBridge.Label("Filter:");
+        _filter = ImguiBridge.TextField(_filter);
 
-        if (GUILayout.Button("Clear", GUILayout.Width(60f)))
+        if (ImguiBridge.Button("Clear"))
         {
             _filter = string.Empty;
         }
 
-        GUILayout.EndHorizontal();
+        ImguiBridge.EndHorizontal();
 
-        GUILayout.Space(6f);
+        ImguiBridge.Space(6f);
 
-        _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
+        _scrollPosition = ImguiBridge.BeginScrollView(_scrollPosition);
 
         foreach (var entry in SceneObjects)
         {
@@ -117,12 +141,11 @@ public sealed class DebugOverlayBehaviour : MonoBehaviour
 
             var indentation = new string(' ', Math.Min(entry.Depth, 30) * 2);
             var state = entry.IsActive ? "[+]" : "[-]";
-            GUILayout.Label($"{indentation}{state} {entry.Name}");
+            ImguiBridge.Label($"{indentation}{state} {entry.Name}");
         }
 
-        GUILayout.EndScrollView();
-
-        GUI.DragWindow(new Rect(0f, 0f, _windowRect.width, 24f));
+        ImguiBridge.EndScrollView();
+        ImguiBridge.EndArea();
     }
 
     private static bool MatchesFilter(string objectName)
