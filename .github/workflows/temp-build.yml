@@ -21,5 +21,11 @@ jobs:
       - name: Restore
         run: dotnet restore PhasmophobiaTools.sln
 
+      - name: Inspect UnityEngine.Modules package
+        shell: pwsh
+        run: |
+          Get-ChildItem "$env:USERPROFILE\.nuget\packages\unityengine.modules\2022.3.17" -Recurse |
+            ForEach-Object { $_.FullName }
+
       - name: Build
         run: dotnet build PhasmophobiaTools.sln --configuration Release --no-restore
